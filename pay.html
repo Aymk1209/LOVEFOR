@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pay · love for</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a href="index.html" class="brand">love <em>for</em></a>
+  </div>
+</nav>
+
+<main class="flow">
+  <div class="wrap">
+    <div class="flow-head">
+      <a href="#" class="flow-back" id="backLink">← edit details</a>
+      <h1 class="flow-title">One payment, then your link</h1>
+      <p class="flow-sub">No account needed. Your details are already saved for this browser tab.</p>
+    </div>
+
+    <div class="progress"><span class="done"></span><span class="done"></span><span></span></div>
+
+    <div class="pay-summary" id="summary"></div>
+
+    <div class="pay-options" id="options"></div>
+
+    <div id="statusArea"></div>
+  </div>
+</main>
+
+<script src="assets/templates-data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const tid = params.get("t");
+  const cfg = getTemplate(tid);
+  const ref = params.get("ref") || genRefId();
+  const draft = JSON.parse(sessionStorage.getItem("lf_draft") || "null");
+
+  document.getElementById("backLink").href = "create.html?t=" + tid;
+
+  document.getElementById("summary").innerHTML = `
+    <div class="tpl">${cfg.icon} ${cfg.name} — for ${draft ? escapeHtml(draft.to) : "them"}</div>
+    <div class="amount">₹${cfg.price}<span> one-time</span></div>
+  `;
+
+  function goToFinishedPage(){
+    const data = Object.assign({}, draft, { __t: tid, __owner: 1 });
+    sessionStorage.removeItem("lf_draft");
+    location.href = "view.html#" + encodeData(data);
+  }
+
+  // Returning from a successful Razorpay Payment Link redirect looks like:
+  // pay.html?t=birthday&razorpay_payment_id=pay_xxx&razorpay_payment_link_status=paid
+  const rpStatus = params.get("razorpay_payment_link_status");
+  const rpPaymentId = params.get("razorpay_payment_id");
+
+  if (rpPaymentId && rpStatus === "paid" && draft) {
+    document.getElementById("options").style.display = "none";
+    document.getElementById("statusArea").innerHTML =
+      `<div class="status-msg ok">Payment confirmed (${rpPaymentId}). Building your page…</div>`;
+    setTimeout(goToFinishedPage, 900);
+  } else if (!draft) {
+    document.getElementById("options").innerHTML = "";
+    document.getElementById("statusArea").innerHTML =
+      `<div class="status-msg wait">We couldn't find your draft in this browser tab — it may have expired.
+       <a href="create.html?t=${tid}">Start again</a>.</div>`;
+  } else {
+    renderOptions();
+  }
+
+  function renderOptions(){
+    const upiLink = buildUpiLink({ amount: cfg.price, note: cfg.name + " for " + draft.to, refId: ref });
+    const qr = qrImageUrl(upiLink, 220);
+
+    let html = "";
+
+    if (cfg.payLink) {
+      html += `
+        <div class="pay-card">
+          <h4>Pay securely — card, UPI, netbanking</h4>
+          <p>Opens Razorpay's checkout. You'll land back here automatically once payment is confirmed.</p>
+          <a class="btn btn-dark btn-block" href="${cfg.payLink}">Pay ₹${cfg.price} with Razorpay</a>
+        </div>`;
+    } else {
+      html += `
+        <div class="pay-card">
+          <h4>Card / netbanking checkout — coming online shortly</h4>
+          <p>The Razorpay link for this page hasn't been added yet. Use UPI below for now, or check back soon.</p>
+        </div>`;
+    }
+
+    html += `
+      <div class="pay-card upi">
+        <h4>Or pay directly by UPI</h4>
+        <img src="${qr}" width="180" height="180" alt="UPI QR code" class="qr-box">
+        <div class="vpa">${SITE_UPI_ID} · ₹${cfg.price}</div>
+        <a class="btn btn-primary btn-block" href="${upiLink}">Open GPay / PhonePe / Paytm</a>
+        <p style="margin-top:14px;font-size:12px">
+          Reference: ${ref} — mention this in the payment note if asked.
+        </p>
+        <button class="btn btn-ghost btn-block" style="margin-top:10px" id="manualConfirm">
+          I've paid via UPI — continue
+        </button>
+        <p style="margin-top:10px;font-size:11px;opacity:.7">
+          This step isn't auto-verified — it takes your word for it. For untrusted buyers, use the Razorpay option above instead.
+        </p>
+      </div>`;
+
+    document.getElementById("options").innerHTML = html;
+    document.getElementById("manualConfirm").addEventListener("click", goToFinishedPage);
+  }
+
+  function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+</script>
+</body>
+</html>

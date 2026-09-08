@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Love For — a personalised page, not another text</title>
+<meta name="description" content="Pick a page, add your words and a photo, share one link. Love For is a small, no-login way to make someone a personalised gift page.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a href="index.html" class="brand">love <em>for</em></a>
+    <a href="#gallery" class="nav-cta">Make one</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-eyebrow">a page, not a text</div>
+    <h1>Say it properly, <i>for once</i>.</h1>
+    <p class="lead">
+      Pick a page, fill in your own words and a photo, and get one link to send.
+      No account, no app to install on their end — they just open it.
+    </p>
+    <div class="hero-actions">
+      <a href="#gallery" class="btn btn-primary">Browse pages</a>
+      <a href="templates/love-note.html" class="btn btn-ghost">See a free one</a>
+    </div>
+  </div>
+</header>
+
+<section class="gallery" id="gallery">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Five occasions, one link each</h2>
+      <p>Every page is built the same way: pick it, personalise it, pay once if it isn't free, share the link.</p>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>How it works</h2>
+    </div>
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="n">first</div>
+        <h4>Pick a page</h4>
+        <p>Five styles, each built for a different moment. Preview any of them before deciding.</p>
+      </div>
+      <div class="how-step">
+        <div class="n">then</div>
+        <h4>Add your words</h4>
+        <p>Names, a message, a photo link, maybe a song. Two minutes, no design skill needed.</p>
+      </div>
+      <div class="how-step">
+        <div class="n">last</div>
+        <h4>Share the link</h4>
+        <p>Pay once if the page isn't free, then send the link or the QR. That's the whole gift.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    love for — made for one person, by someone who knows them better than a template does.
+  </div>
+</footer>
+
+<script src="assets/templates-data.js"></script>
+<script>
+  const grid = document.getElementById("grid");
+  grid.innerHTML = TEMPLATES.map(t => `
+    <div class="card" style="background:${t.accent}22; border:1px solid ${t.accent}55;">
+      <div class="icon">${t.icon}</div>
+      <h3 style="color:#241220">${t.name}</h3>
+      <p style="color:#3a2436cc">${t.tagline}</p>
+      <div class="price" style="color:#241220">
+        ${t.price === 0 ? '<span class="free">Free</span>' : "₹" + t.price + " one-time"}
+      </div>
+      <div class="row">
+        <a href="templates/${t.id}.html" class="btn btn-ghost" style="border-color:#24122033;color:#241220">Preview</a>
+        <a href="create.html?t=${t.id}" class="btn btn-dark">Make yours</a>
+      </div>
+    </div>
+  `).join("");
+</script>
+</body>
+</html>

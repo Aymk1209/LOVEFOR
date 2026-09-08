@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview · love for</title>
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  body{ background: var(--ink); }
+  .preview-bar{
+    position:sticky; top:0; z-index:60;
+    background: rgba(36,18,32,0.92); backdrop-filter: blur(8px);
+    padding: 12px 20px; display:flex; align-items:center; justify-content:space-between;
+    color: var(--parchment); font-size: 13px;
+  }
+  .preview-bar a.back{ color: var(--parchment); opacity:.75; text-decoration:none; }
+</style>
+</head>
+<body>
+
+<div class="preview-bar">
+  <a href="../index.html#gallery" class="back">← all pages</a>
+  <a href="../create.html?t=love-note" class="btn btn-primary" style="padding:9px 16px;font-size:13px">Make yours</a>
+</div>
+
+<div class="gift" id="gift"></div>
+
+<script src="../assets/templates-data.js"></script>
+<script src="../assets/app.js"></script>
+<script src="../assets/view-engine.js"></script>
+<script>
+  const cfg = getTemplate("love-note");
+  const data = Object.assign({ __t: "love-note" }, sampleDataFor("love-note"));
+  renderGift(document.getElementById("gift"), cfg, data);
+</script>
+</body>
+</html>

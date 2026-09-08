@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Make yours · love for</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a href="index.html" class="brand">love <em>for</em></a>
+  </div>
+</nav>
+
+<main class="flow">
+  <div class="wrap">
+    <div class="flow-head">
+      <a href="index.html" class="flow-back">← back to all pages</a>
+      <h1 class="flow-title" id="flowTitle">Make yours</h1>
+      <p class="flow-sub" id="flowSub"></p>
+    </div>
+
+    <div class="progress"><span class="done"></span><span></span><span></span></div>
+
+    <form class="card-form" id="form">
+      <div class="field-row">
+        <div class="field">
+          <label>Your name</label>
+          <input type="text" name="from" required placeholder="Aarav">
+        </div>
+        <div class="field">
+          <label>Their name</label>
+          <input type="text" name="to" required placeholder="Meera">
+        </div>
+      </div>
+
+      <div class="field" id="dateField" style="display:none">
+        <label>Date it started <span class="hint">(for the day counter)</span></label>
+        <input type="date" name="date">
+      </div>
+
+      <div class="field">
+        <label>Your message <span class="hint">the letter they'll read</span></label>
+        <textarea name="message" required placeholder="Write it like you'd say it out loud..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>A few short lines <span class="hint">reasons, wishes, memories — one per line, up to 5</span></label>
+        <textarea name="reasons" placeholder="One reason per line"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Photo link <span class="hint">optional — paste a link to an image (e.g. from Google Photos, Imgur)</span></label>
+        <input type="url" name="photoUrl" placeholder="https://...">
+      </div>
+
+      <div class="field">
+        <label>Song link <span class="hint">optional — a YouTube or Spotify link</span></label>
+        <input type="url" name="songUrl" placeholder="https://...">
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Continue</button>
+    </form>
+  </div>
+</main>
+
+<script src="assets/templates-data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const tid = params.get("t") || "love-note";
+  const cfg = getTemplate(tid) || TEMPLATES[0];
+
+  document.getElementById("flowTitle").textContent = "Make yours: " + cfg.name;
+  document.getElementById("flowSub").textContent = cfg.price === 0
+    ? "This one's free — fill it in and your link is ready instantly."
+    : "Fill it in, then pay once (₹" + cfg.price + ") to get your link.";
+  document.getElementById("submitBtn").textContent = cfg.price === 0
+    ? "Create my free page"
+    : "Continue to payment — ₹" + cfg.price;
+
+  if (cfg.id === "anniversary") document.getElementById("dateField").style.display = "block";
+
+  document.getElementById("form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const data = {
+      __t: cfg.id,
+      __owner: 1,
+      from: fd.get("from").trim(),
+      to: fd.get("to").trim(),
+      message: fd.get("message").trim(),
+      reasons: (fd.get("reasons") || "").split("\n").map(s => s.trim()).filter(Boolean).slice(0, 5),
+      photoUrl: (fd.get("photoUrl") || "").trim(),
+      songUrl: (fd.get("songUrl") || "").trim(),
+      date: fd.get("date") || ""
+    };
+
+    if (cfg.price === 0) {
+      location.href = "view.html#" + encodeData(data);
+      return;
+    }
+
+    const ref = genRefId();
+    sessionStorage.setItem("lf_draft", JSON.stringify(data));
+    location.href = "pay.html?t=" + cfg.id + "&ref=" + ref;
+  });
+</script>
+</body>
+</html>
