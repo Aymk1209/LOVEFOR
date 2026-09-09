@@ -1,8 +1,5 @@
 /* ============================================================
-   Love For — shared helpers
-   No backend. Personalised page data lives entirely in the URL
-   (base64 JSON in the hash), so a "page" is just a link — nothing
-   to host per-order.
+   Love For — shared helpers & compression
    ============================================================ */
 
 const SITE_UPI_ID = "yogimanikantaare@oksbi";
@@ -29,7 +26,7 @@ function hashParam(){
   return location.hash ? location.hash.slice(1) : "";
 }
 
-// Builds a UPI deep link. Opens the user's UPI app (GPay/PhonePe/Paytm) directly.
+// Builds a secure UPI deep link intent for mobile apps (GPay / PhonePe / Paytm)
 function buildUpiLink({ amount, note, refId }){
   const params = new URLSearchParams({
     pa: SITE_UPI_ID,
@@ -42,19 +39,47 @@ function buildUpiLink({ amount, note, refId }){
   return "upi://pay?" + params.toString();
 }
 
-// Free QR image endpoint — swap for your own generator if you prefer
-// not to depend on a third-party API.
-function qrImageUrl(data, size){
-  size = size || 220;
-  return "https://api.qrserver.com/v1/create-qr-code/?size=" + size + "x" + size +
-    "&data=" + encodeURIComponent(data);
-}
-
 function genRefId(){
   return "LF" + Date.now().toString(36).toUpperCase();
 }
 
-// Lightweight confetti burst — used once, on a single reveal moment.
+// Compresses uploaded images via canvas to ensure shareable URLs remain compact and short
+function compressImage(file, callback) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      const MAX_WIDTH = 400;
+      const MAX_HEIGHT = 500;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+      } else {
+        if (height > MAX_HEIGHT) {
+          width *= MAX_HEIGHT / height;
+          height = MAX_HEIGHT;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Compress to JPEG with 0.75 quality to dramatically shrink URL size
+      callback(canvas.toDataURL("image/jpeg", 0.75));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function fireConfetti(root){
   const colors = ["#E8637A", "#D8A441", "#3F8C8C", "#F7F0E4"];
   for (let i = 0; i < 60; i++){
