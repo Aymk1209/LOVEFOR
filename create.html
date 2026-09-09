@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Make yours · love for</title>
+<title>Make yours · Love For</title>
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -28,11 +28,11 @@
       <div class="field-row">
         <div class="field">
           <label>Your name</label>
-          <input type="text" name="from" required placeholder="Aarav">
+          <input type="text" name="from" required placeholder="e.g. Aarav">
         </div>
         <div class="field">
           <label>Their name</label>
-          <input type="text" name="to" required placeholder="Meera">
+          <input type="text" name="to" required placeholder="e.g. Meera">
         </div>
       </div>
 
@@ -42,7 +42,7 @@
       </div>
 
       <div class="field">
-        <label>Your message <span class="hint">the letter they'll read</span></label>
+        <label>Your message <span class="hint">the letter they'll read while listening to the music</span></label>
         <textarea name="message" required placeholder="Write it like you'd say it out loud..."></textarea>
       </div>
 
@@ -52,13 +52,14 @@
       </div>
 
       <div class="field">
-        <label>Photo link <span class="hint">optional — paste a link to an image (e.g. from Google Photos, Imgur)</span></label>
-        <input type="url" name="photoUrl" placeholder="https://...">
+        <label>Upload a photo <span class="hint">Choose a single photo from your device</span></label>
+        <input type="file" id="photoFile" accept="image/*">
+        <input type="hidden" name="photoUrl" id="photoUrl">
       </div>
 
       <div class="field">
-        <label>Song link <span class="hint">optional — a YouTube or Spotify link</span></label>
-        <input type="url" name="songUrl" placeholder="https://...">
+        <label>Song link <span class="hint">Paste a YouTube or Spotify track link so they can play it while reading</span></label>
+        <input type="url" name="songUrl" placeholder="https://www.youtube.com/watch?v=...">
       </div>
 
       <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Continue</button>
@@ -83,6 +84,18 @@
 
   if (cfg.id === "anniversary") document.getElementById("dateField").style.display = "block";
 
+  // Handle image upload converting to base64
+  document.getElementById("photoFile").addEventListener("change", function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(uploadEvent) {
+        document.getElementById("photoUrl").value = uploadEvent.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
   document.getElementById("form").addEventListener("submit", (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
@@ -93,7 +106,7 @@
       to: fd.get("to").trim(),
       message: fd.get("message").trim(),
       reasons: (fd.get("reasons") || "").split("\n").map(s => s.trim()).filter(Boolean).slice(0, 5),
-      photoUrl: (fd.get("photoUrl") || "").trim(),
+      photoUrl: document.getElementById("photoUrl").value.trim(),
       songUrl: (fd.get("songUrl") || "").trim(),
       date: fd.get("date") || ""
     };
