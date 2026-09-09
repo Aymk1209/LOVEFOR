@@ -1,10 +1,5 @@
 /* ============================================================
    Love For — template catalogue
-   Edit prices, copy, and Razorpay Payment Links here.
-   Each `payLink` should be a Razorpay Payment Link URL you create
-   in your Razorpay dashboard (Payment Links > + Create).
-   IMPORTANT: set that Payment Link's "Redirect URL after payment"
-   to  https://<your-domain>/pay.html  (see README for details).
    ============================================================ */
 
 const TEMPLATES = [
@@ -15,7 +10,7 @@ const TEMPLATES = [
     accent: "#E8637A",
     tagline: "An envelope that opens into a full birthday surprise — wishes, a photo and a letter.",
     price: 149,
-    payLink: "", // e.g. "https://rzp.io/l/abc123" — leave blank to use UPI-only checkout
+    payLink: "",
     eyebrow: "you've got a surprise",
     heroTitle: "Happy Birthday, {to}",
     heroBody: "Someone made you something. Keep going.",
@@ -73,8 +68,8 @@ const TEMPLATES = [
     name: "Love Note",
     icon: "💌",
     accent: "#E8637A",
-    tagline: "A short, sweet love page. Free — no reason to wait.",
-    price: 0,
+    tagline: "A short, sweet love page. Quick, personal, and meaningful.",
+    price: 100, // Updated to ₹100 as requested
     payLink: "",
     eyebrow: "for you",
     heroTitle: "A note for {to}",
