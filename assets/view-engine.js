@@ -1,8 +1,5 @@
 /* ============================================================
-   Love For — gift page renderer
-   Renders a personalised page from a data object + template config.
-   Used by both view.html (real, paid pages) and templates/*.html
-   (previews, seeded with sample data).
+   Love For — gift page renderer (Updated)
    ============================================================ */
 
 function sampleDataFor(id){
@@ -13,7 +10,7 @@ function sampleDataFor(id){
       "I don't say this enough, so I built a whole page to say it properly.\n\n" +
       "Thank you for the small things you probably don't even notice you do — " +
       "the voice notes, the terrible puns, staying up to talk about nothing.\n\n" +
-      "This is the short version. The long version is every day since.",
+      "This is the short version. Press play above and read slowly.",
     reasons: [
       "You remember things I mention once, in passing, weeks later.",
       "You make ordinary days feel like they were worth showing up for.",
@@ -35,11 +32,11 @@ function embedFromSongUrl(url){
     if (u.hostname.includes("youtube.com") || u.hostname.includes("youtu.be")){
       let vid = u.searchParams.get("v");
       if (!vid && u.hostname.includes("youtu.be")) vid = u.pathname.slice(1);
-      if (vid) return `<iframe src="https://www.youtube.com/embed/${vid}" allow="autoplay; encrypted-media" allowfullscreen height="80"></iframe>`;
+      if (vid) return `<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
     }
     if (u.hostname.includes("spotify.com")){
       const path = u.pathname.replace("/track/", "/embed/track/").replace("/playlist/", "/embed/playlist/");
-      return `<iframe src="https://open.spotify.com${path}" allow="encrypted-media" height="152"></iframe>`;
+      return `<iframe src="https://open.spotify.com${path}" allow="encrypted-media"></iframe>`;
     }
   }catch(e){ /* not a valid URL — ignore */ }
   return "";
@@ -56,13 +53,25 @@ function daysSince(dateStr){
 function sceneHero(cfg, data){
   const title = cfg.heroTitle.replace("{to}", data.to || "you");
   const days = daysSince(data.date);
+  const embed = embedFromSongUrl(data.songUrl);
+
   return `
     <section class="scene" style="background:${cfg.accent}">
       <div class="eyebrow">${cfg.eyebrow}</div>
       <h2>${title}</h2>
       <p>${cfg.heroBody}</p>
-      ${days !== null ? `<p style="margin-top:18px;font-size:15px;opacity:.75">${days} days, and counting</p>` : ""}
-      <div class="scroll-cue">scroll ↓</div>
+      ${days !== null ? `<p style="margin-top:14px;font-size:15px;opacity:.8">${days} days, and counting</p>` : ""}
+      
+      ${embed ? `
+        <div style="margin-top: 24px; width: 100%; display: flex; justify-content: center;">
+          <div class="song-embed" style="max-width: 380px;">
+            <p style="font-size: 12px; margin-bottom: 8px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">🎵 Press play & read along</p>
+            ${embed}
+          </div>
+        </div>
+      ` : ""}
+
+      <div class="scroll-cue">scroll down to read your message ↓</div>
     </section>`;
 }
 
@@ -70,7 +79,7 @@ function sceneReasons(cfg, data){
   const items = (data.reasons || []).filter(Boolean);
   if (!items.length) return "";
   return `
-    <section class="scene" style="background:${cfg.accent}dd">
+    <section class="scene" style="background:${cfg.accent}ee">
       <div class="eyebrow">${cfg.reasonsLabel}</div>
       <div class="reasons">
         ${items.map((r, i) => `
@@ -87,18 +96,13 @@ function scenePhoto(cfg, data){
   return `
     <section class="scene" style="background:${cfg.accent}">
       <div class="photo-frame"><img src="${data.photoUrl}" alt="A photo of ${data.to || 'you'}" loading="lazy"></div>
-      <p style="opacity:.7;font-size:14px">from ${data.from || "someone who cares"}</p>
+      <p style="opacity:.8;font-size:14px; font-weight: 600;">Captured by ${data.from || "someone special"}</p>
     </section>`;
 }
 
 function sceneSong(cfg, data){
-  const embed = embedFromSongUrl(data.songUrl);
-  if (!embed) return "";
-  return `
-    <section class="scene" style="background:${cfg.accent}dd">
-      <div class="eyebrow">a song for this</div>
-      <div class="song-embed">${embed}</div>
-    </section>`;
+  // If song is already shown in hero, we can optionally skip or display as an extra dedication section
+  return "";
 }
 
 function sceneLetter(cfg, data){
@@ -106,7 +110,7 @@ function sceneLetter(cfg, data){
     <section class="scene" style="background:${cfg.accent}">
       <div class="eyebrow">${cfg.letterLabel}</div>
       <div class="letter">${escapeHtml(data.message || "")}
-        <div class="sign">— ${data.from || "someone who cares about you"}</div>
+        <div class="sign">— With love, ${data.from || "someone who cares about you"}</div>
       </div>
     </section>`;
 }
@@ -122,13 +126,12 @@ function renderGift(root, cfg, data){
   const order = cfg.order.filter(key => {
     if (key === "reasons") return (data.reasons || []).some(Boolean);
     if (key === "photo") return !!data.photoUrl;
-    if (key === "song") return !!embedFromSongUrl(data.songUrl);
+    if (key === "song") return false; // Handled directly in hero for maximum emotional impact
     return true;
   });
   root.innerHTML = order.map(key => SCENES[key](cfg, data)).join("");
-  document.title = (cfg.heroTitle.replace("{to}", data.to || "you")) + " · love for";
+  document.title = (cfg.heroTitle.replace("{to}", data.to || "you")) + " · Love For";
 
-  // one orchestrated reveal moment on the first scene
   requestAnimationFrame(() => {
     const first = root.querySelector(".scene");
     if (first){
@@ -137,6 +140,5 @@ function renderGift(root, cfg, data){
         { duration: 700, easing: "cubic-bezier(.2,.7,.3,1)" }
       );
     }
-    if (typeof fireConfetti === "function") fireConfetti();
   });
 }
