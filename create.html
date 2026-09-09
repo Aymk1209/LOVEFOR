@@ -58,11 +58,11 @@
       </div>
 
       <div class="field">
-        <label>Song link <span class="hint">Paste a YouTube or Spotify track link so they can play it while reading</span></label>
+        <label>Song link <span class="hint">Paste a YouTube track link so they can play it while reading</span></label>
         <input type="url" name="songUrl" placeholder="https://www.youtube.com/watch?v=...">
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Continue</button>
+      <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Continue to Payment</button>
     </form>
   </div>
 </main>
@@ -75,24 +75,18 @@
   const cfg = getTemplate(tid) || TEMPLATES[0];
 
   document.getElementById("flowTitle").textContent = "Make yours: " + cfg.name;
-  document.getElementById("flowSub").textContent = cfg.price === 0
-    ? "This one's free — fill it in and your link is ready instantly."
-    : "Fill it in, then pay once (₹" + cfg.price + ") to get your link.";
-  document.getElementById("submitBtn").textContent = cfg.price === 0
-    ? "Create my free page"
-    : "Continue to payment — ₹" + cfg.price;
+  document.getElementById("flowSub").textContent = "Fill in your details, then complete the secure payment (₹" + cfg.price + ") to generate your page link instantly.";
+  document.getElementById("submitBtn").textContent = "Proceed to Payment — ₹" + cfg.price;
 
   if (cfg.id === "anniversary") document.getElementById("dateField").style.display = "block";
 
-  // Handle image upload converting to base64
+  // Compress image to ensure clean URL length upon upload
   document.getElementById("photoFile").addEventListener("change", function(e) {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = function(uploadEvent) {
-        document.getElementById("photoUrl").value = uploadEvent.target.result;
-      };
-      reader.readAsDataURL(file);
+      compressImage(file, function(compressedDataUrl) {
+        document.getElementById("photoUrl").value = compressedDataUrl;
+      });
     }
   });
 
@@ -101,7 +95,6 @@
     const fd = new FormData(e.target);
     const data = {
       __t: cfg.id,
-      __owner: 1,
       from: fd.get("from").trim(),
       to: fd.get("to").trim(),
       message: fd.get("message").trim(),
@@ -110,11 +103,6 @@
       songUrl: (fd.get("songUrl") || "").trim(),
       date: fd.get("date") || ""
     };
-
-    if (cfg.price === 0) {
-      location.href = "view.html#" + encodeData(data);
-      return;
-    }
 
     const ref = genRefId();
     sessionStorage.setItem("lf_draft", JSON.stringify(data));
